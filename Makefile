@@ -8,4 +8,7 @@ lint:
 	npx eslint .
 
 build:
-	npm run build
+	NODE_ENV=production npx webpack
+
+start:
+	npx webpack serve
