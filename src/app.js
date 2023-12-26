@@ -1,6 +1,8 @@
 import i18next from 'i18next';
 import onChange from 'on-change';
 import * as yup from 'yup';
+import axios from 'axios';
+import resources from './locales/index.js';
 
 // model
 
@@ -38,7 +40,8 @@ export default () => {
       const currentUrl = input.value;
       const feedLinks = initialState.content.feeds.map((feed) => feed.link);
       const validate = (url, urlList) => {
-        const schema = yup.string().trim().required().url().notOneOf(urlList);
+        const schema = yup.string().trim().required().url()
+          .notOneOf(urlList);
         return schema.validate(url);
       };
 

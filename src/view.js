@@ -1,14 +1,20 @@
 // onchange
+const getFeedback = (state, i18nextInstance) => {
+  const { error } = state.process;
+  if (error) {
+    const messageValue = error.code ?? error.message;
+    const feedbackText = i18nextInstance.t(messageValue);
+    return feedbackText;
+  }
+  return i18nextInstance.t('submit');
+};
+
 export default (elements, state, i18nextInstance, path) => {
   const {
     input, feedbackEl,
   } = elements;
   const { valid } = state;
   switch (path) {
-    case 'process.processState': {
-      renderButton(state);
-      break;
-    }
     case 'valid': {
       input.value = '';
       input.focus();
