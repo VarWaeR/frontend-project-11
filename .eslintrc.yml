@@ -8,6 +8,10 @@ parserOptions:
   sourceType: module
 rules:   
   no-console: 0
+  no-param-reassign: 0
+  import/no-named-as-default: 0
+  no-undef: 0
+  consistent-return: 0
   import/extensions:
     - error
     - ignorePackages
