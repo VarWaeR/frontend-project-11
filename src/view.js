@@ -1,4 +1,67 @@
-// onchange
+const renderPosts = (state) => {
+  const { posts } = state.content;
+  const content = posts.map((post) => {
+    const { title, link, id } = post;
+
+    const newPost = document.createElement('li');
+    newPost.classList.add(
+      'list-group-item',
+      'd-flex',
+      'justify-content-between',
+      'align-items-start',
+      'border-0',
+      'border-end-0',
+    );
+
+    const newPostLink = document.createElement('a');
+    newPostLink.textContent = title;
+    newPostLink.classList.add('fw-bold');
+    newPost.classList.add('fw-bold');
+    newPostLink.setAttribute('data-id', id);
+    newPostLink.setAttribute('target', '_blank');
+    newPostLink.setAttribute('rel', 'noopener noreferrer');
+    newPostLink.setAttribute('href', link);
+
+    newPost.append(newPostLink);
+    return newPost;
+  });
+
+  return content;
+};
+
+const renderFeeds = (state) => {
+  const { feeds } = state.content;
+  const newFeeds = feeds.map((feed) => {
+    const { title, description } = feed;
+    const newFeed = document.createElement('li');
+    newFeed.classList.add('list-group-item', 'border-0', 'border-end-0');
+
+    const hTitle = document.createElement('h3');
+    hTitle.classList.add('h6', 'm-0');
+    hTitle.textContent = title;
+
+    const pDescription = document.createElement('p');
+    pDescription.classList.add('m-0', 'small', 'text-black-50');
+    pDescription.textContent = description;
+
+    newFeed.append(hTitle, pDescription);
+    return newFeed;
+  });
+  return newFeeds;
+};
+
+const buildContentBlock = (blockName) => {
+  const contentBlock = document.createElement('div');
+  contentBlock.classList.add('card', 'border-0');
+  const nameDiv = document.createElement('div');
+  nameDiv.classList.add('card-body');
+  nameDiv.innerHTML = `<h2 class="card-title h4">${blockName}</h2>`;
+  const contentList = document.createElement('ul');
+  contentList.classList.add('list-group', 'border-0', 'rounded-0');
+  contentBlock.append(nameDiv, contentList);
+  return contentBlock;
+};
+
 const getFeedback = (state, i18nextInstance) => {
   const { error } = state.process;
   if (error) {
@@ -9,12 +72,25 @@ const getFeedback = (state, i18nextInstance) => {
   return i18nextInstance.t('submit');
 };
 
+const renderButton = (state) => {
+  const submitButton = document.querySelector('button[type="submit"]');
+  if (state.process.processState !== 'finished') {
+    submitButton.classList.add('disabled');
+  } else {
+    submitButton.classList.remove('disabled');
+  }
+};
+
 export default (elements, state, i18nextInstance, path) => {
   const {
-    input, feedbackEl,
+    input, feedbackEl, feedSection, postSection, modalWindow,
   } = elements;
   const { valid } = state;
   switch (path) {
+    case 'process.processState': {
+      renderButton(state);
+      break;
+    }
     case 'valid': {
       input.value = '';
       input.focus();
@@ -23,13 +99,34 @@ export default (elements, state, i18nextInstance, path) => {
     case 'process.error': {
       const feedbackText = getFeedback(state, i18nextInstance);
       if (valid) {
+        input.classList.remove('is-invalid');
         feedbackEl.classList.remove('is-invalid', 'text-danger');
         feedbackEl.classList.add('text-success');
       } else {
+        input.classList.add('is-invalid');
         feedbackEl.classList.remove('text-success');
         feedbackEl.classList.add('is-invalid', 'text-danger');
       }
       feedbackEl.textContent = feedbackText;
+      break;
+    }
+    case 'content.posts': {
+      const firstRound = feedSection.childNodes.length === 0;
+      if (firstRound) {
+        const feedsBlock = buildContentBlock('Фиды');
+        feedSection.append(feedsBlock);
+        const postsBlock = buildContentBlock('Посты');
+        postSection.append(postsBlock);
+      }
+      const postsList = postSection.querySelector('ul');
+      const view = renderPosts(state, modalWindow);
+      postsList.replaceChildren(...view);
+      break;
+    }
+    case 'content.feeds': {
+      const feedsList = feedSection.querySelector('ul');
+      const view = renderFeeds(state);
+      feedsList.replaceChildren(...view);
       break;
     }
     case 'process.value': {
