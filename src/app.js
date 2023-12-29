@@ -73,7 +73,25 @@ export default () => {
         state.content.posts.push(...newPosts);
       };
 
+      const getNewPosts = (state) => {
+        const delay = 5000;
+        const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link).then((response) => {
+          const { posts } = parser(response.data.contents);
+          const addedPosts = state.content.posts.map((post) => post.link);
+          const newPosts = posts.filter((post) => !addedPosts.includes(post.link));
+          if (newPosts.length > 0) {
+            createPosts(state, newPosts, feedId);
+          }
+          return Promise.resolve();
+        }));
+
+        Promise.allSettled(promises).finally(() => {
+          setTimeout(() => getNewPosts(state), delay);
+        });
+      };
+
       const watchedState = onChange(initialState, (path, value) => render(elements, initialState, i18nextInstance, path, value));
+      getNewPosts(watchedState);
 
       yup.setLocale({
         mixed: {
