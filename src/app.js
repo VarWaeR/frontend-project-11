@@ -5,7 +5,7 @@ import * as yup from 'yup';
 import axios from 'axios';
 import _ from 'lodash';
 import render from './view.js';
-import parser from './parser.js';
+import parse from './parser.js';
 import resources from './locales/index.js';
 
 const defaultLanguage = 'ru';
@@ -76,7 +76,7 @@ export default () => {
       const getNewPosts = (state) => {
         const delay = 5000;
         const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link).then((response) => {
-          const { posts } = parser(response.data.contents);
+          const { posts } = parse(response.data.contents);
           const addedPosts = state.content.posts.map((post) => post.link);
           const newPosts = posts.filter((post) => !addedPosts.includes(post.link));
           if (newPosts.length > 0) {
@@ -113,7 +113,7 @@ export default () => {
             return getAxiosResponse(validUrl);
           })
           .then((response) => {
-            const { posts, feed } = parser(response.data.contents);
+            const { posts, feed } = parse(response.data.contents);
             const feedId = _.uniqueId();
             createPosts(watchedState, posts, feedId);
             const validUrl = watchedState.process.value;
@@ -127,6 +127,18 @@ export default () => {
             watchedState.process.error = error;
             watchedState.process.processState = 'finished';
           });
+      });
+      postSection.addEventListener('click', (e) => {
+        const id = e.target.getAttribute('data-id');
+        if (id) {
+          const isButton = e.target.tagName === 'BUTTON';
+          if (isButton) {
+            watchedState.uiState.modalId = id;
+            watchedState.uiState.visitedLinksIds.add(id);
+          } else {
+            watchedState.uiState.visitedLinksIds.add(id);
+          }
+        }
       });
     });
 };

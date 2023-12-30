@@ -22,7 +22,15 @@ const renderPosts = (state) => {
     newPostLink.setAttribute('rel', 'noopener noreferrer');
     newPostLink.setAttribute('href', link);
 
-    newPost.append(newPostLink);
+    const newPostButton = document.createElement('button');
+    newPostButton.setAttribute('type', 'button');
+    newPostButton.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    newPostButton.setAttribute('data-id', id);
+    newPostButton.setAttribute('data-bs-toggle', 'modal');
+    newPostButton.setAttribute('data-bs-target', '#modal');
+    newPostButton.textContent = 'Просмотр';
+
+    newPost.append(newPostLink, newPostButton);
     return newPost;
   });
 
@@ -91,11 +99,13 @@ export default (elements, state, i18nextInstance, path) => {
       renderButton(state);
       break;
     }
+
     case 'valid': {
       input.value = '';
       input.focus();
       break;
     }
+
     case 'process.error': {
       const feedbackText = getFeedback(state, i18nextInstance);
       if (valid) {
@@ -110,6 +120,7 @@ export default (elements, state, i18nextInstance, path) => {
       feedbackEl.textContent = feedbackText;
       break;
     }
+
     case 'content.posts': {
       const firstRound = feedSection.childNodes.length === 0;
       if (firstRound) {
@@ -123,15 +134,42 @@ export default (elements, state, i18nextInstance, path) => {
       postsList.replaceChildren(...view);
       break;
     }
+
     case 'content.feeds': {
       const feedsList = feedSection.querySelector('ul');
       const view = renderFeeds(state);
       feedsList.replaceChildren(...view);
       break;
     }
+
     case 'process.value': {
       break;
     }
+
+    case 'uiState.visitedLinksIds': {
+      state.uiState.visitedLinksIds.forEach((id) => {
+        const visitedLink = document.querySelector(`a[data-id="${id}"]`);
+        visitedLink.classList.remove('fw-bold');
+        visitedLink.classList.add('fw-normal', 'link-secondary');
+      });
+      break;
+    }
+
+    case 'uiState.modalId': {
+      const { modalId } = state.uiState;
+      const activePost = state.content.posts.find(({ id }) => id === modalId);
+      const { title, description, link } = activePost;
+      const modalHeader = modalWindow.querySelector('.modal-header');
+      modalHeader.textContent = title;
+
+      const modalBody = modalWindow.querySelector('.modal-body');
+      modalBody.textContent = description;
+
+      const readMoreButton = modalWindow.querySelector('.full-article');
+      readMoreButton.setAttribute('href', link);
+      break;
+    }
+
     default: {
       throw new Error('Unexpected changes in state!');
     }
