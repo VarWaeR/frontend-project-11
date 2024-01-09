@@ -1,7 +1,7 @@
 {
   "name": "@hexlet/code",
   "version": "1.0.0",
-  "description": "[![Actions Status](https://github.com/VarWaeR/frontend-project-11/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/VarWaeR/frontend-project-11/actions)",
+  "description": "An aggregator program for collecting news, releases and publications",
   "type": "module",
   "main": "./src/index.js",
   "scripts": {
