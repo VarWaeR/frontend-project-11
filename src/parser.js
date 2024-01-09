@@ -4,8 +4,7 @@ export default (data) => {
 
   const error = parsedData.querySelector('parsererror');
   if (error) {
-    const customError = new Error('An error occurred while parsing the XML data !');
-    customError.code = 'parseError';
+    const customError = new Error(error.textContent);
     throw customError;
   }
 
