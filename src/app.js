@@ -10,6 +10,14 @@ import resources from './locales/index.js';
 
 const defaultLanguage = 'ru';
 
+yup.setLocale({
+  mixed: {
+    notOneOf: 'doubleRss',
+    required: 'required',
+  },
+  string: { url: 'invalidUrl' },
+});
+
 export default () => {
   const i18nextInstance = i18next.createInstance();
   i18nextInstance
@@ -92,14 +100,6 @@ export default () => {
 
       const watchedState = onChange(initialState, (path, value) => render(elements, initialState, i18nextInstance, path, value));
       getNewPosts(watchedState);
-
-      yup.setLocale({
-        mixed: {
-          notOneOf: 'doubleRss',
-          required: 'required',
-        },
-        string: { url: 'invalidUrl' },
-      });
 
       rssForm.addEventListener('submit', (e) => {
         e.preventDefault();
