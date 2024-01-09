@@ -89,6 +89,61 @@ const renderButton = (state) => {
   }
 };
 
+const processError = (input, valid, feedbackEl, state, i18nextInstance) => {
+  const feedbackText = getFeedback(state, i18nextInstance);
+  if (valid) {
+    input.classList.remove('is-invalid');
+    feedbackEl.classList.remove('is-invalid', 'text-danger');
+    feedbackEl.classList.add('text-success');
+  } else {
+    input.classList.add('is-invalid');
+    feedbackEl.classList.remove('text-success');
+    feedbackEl.classList.add('is-invalid', 'text-danger');
+  }
+  feedbackEl.textContent = feedbackText;
+};
+
+const feelPosts = (feedSection, postSection, modalWindow, state) => {
+  const firstRound = feedSection.childNodes.length === 0;
+  if (firstRound) {
+    const feedsBlock = buildContentBlock('Фиды');
+    feedSection.append(feedsBlock);
+    const postsBlock = buildContentBlock('Посты');
+    postSection.append(postsBlock);
+  }
+  const postsList = postSection.querySelector('ul');
+  const view = renderPosts(state, modalWindow);
+  postsList.replaceChildren(...view);
+};
+
+const feelFeeds = (feedSection, state) => {
+  const feedsList = feedSection.querySelector('ul');
+  const view = renderFeeds(state);
+  feedsList.replaceChildren(...view);
+};
+
+const visitedLinks = (state) => {
+  state.uiState.visitedLinksIds.forEach((id) => {
+    const visitedLink = document.querySelector(`a[data-id="${id}"]`);
+    visitedLink.classList.remove('fw-bold');
+    visitedLink.classList.add('fw-normal', 'link-secondary');
+  });
+};
+
+const modalDescription = (modalWindow, state) => {
+  const { modalId } = state.uiState;
+  const activePost = state.content.posts.find(({ id }) => id === modalId);
+  const { title, description, link } = activePost;
+  const modalHeader = modalWindow.querySelector('.modal-header');
+  modalHeader.textContent = title;
+
+  const modalBody = modalWindow.querySelector('.modal-body');
+  modalBody.textContent = description;
+
+  const readMoreButton = modalWindow.querySelector('.full-article');
+  readMoreButton.setAttribute('href', link);
+};
+
 export default (elements, state, i18nextInstance, path) => {
   const {
     input, feedbackEl, feedSection, postSection, modalWindow,
@@ -107,38 +162,17 @@ export default (elements, state, i18nextInstance, path) => {
     }
 
     case 'process.error': {
-      const feedbackText = getFeedback(state, i18nextInstance);
-      if (valid) {
-        input.classList.remove('is-invalid');
-        feedbackEl.classList.remove('is-invalid', 'text-danger');
-        feedbackEl.classList.add('text-success');
-      } else {
-        input.classList.add('is-invalid');
-        feedbackEl.classList.remove('text-success');
-        feedbackEl.classList.add('is-invalid', 'text-danger');
-      }
-      feedbackEl.textContent = feedbackText;
+      processError(input, valid, feedbackEl, state, i18nextInstance);
       break;
     }
 
     case 'content.posts': {
-      const firstRound = feedSection.childNodes.length === 0;
-      if (firstRound) {
-        const feedsBlock = buildContentBlock('Фиды');
-        feedSection.append(feedsBlock);
-        const postsBlock = buildContentBlock('Посты');
-        postSection.append(postsBlock);
-      }
-      const postsList = postSection.querySelector('ul');
-      const view = renderPosts(state, modalWindow);
-      postsList.replaceChildren(...view);
+      feelPosts(feedSection, postSection, modalWindow, state);
       break;
     }
 
     case 'content.feeds': {
-      const feedsList = feedSection.querySelector('ul');
-      const view = renderFeeds(state);
-      feedsList.replaceChildren(...view);
+      feelFeeds(feedSection, state);
       break;
     }
 
@@ -147,26 +181,12 @@ export default (elements, state, i18nextInstance, path) => {
     }
 
     case 'uiState.visitedLinksIds': {
-      state.uiState.visitedLinksIds.forEach((id) => {
-        const visitedLink = document.querySelector(`a[data-id="${id}"]`);
-        visitedLink.classList.remove('fw-bold');
-        visitedLink.classList.add('fw-normal', 'link-secondary');
-      });
+      visitedLinks(state);
       break;
     }
 
     case 'uiState.modalId': {
-      const { modalId } = state.uiState;
-      const activePost = state.content.posts.find(({ id }) => id === modalId);
-      const { title, description, link } = activePost;
-      const modalHeader = modalWindow.querySelector('.modal-header');
-      modalHeader.textContent = title;
-
-      const modalBody = modalWindow.querySelector('.modal-body');
-      modalBody.textContent = description;
-
-      const readMoreButton = modalWindow.querySelector('.full-article');
-      readMoreButton.setAttribute('href', link);
+      modalDescription(modalWindow, state);
       break;
     }
 
